@@ -1,0 +1,63 @@
+name: Performance - k6 login FakeStoreAPI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'performance/carga-k6-login/**'
+      - '.github/workflows/performance-k6.yml'
+  workflow_dispatch:
+    inputs:
+      target_tps:
+        description: 'TPS de la fase sostenida'
+        required: false
+        default: '30'
+      steady_duration:
+        description: 'Duracion de la fase sostenida (ej. 2m, 5m)'
+        required: false
+        default: '2m'
+
+jobs:
+  carga-login:
+    name: Prueba de carga del login
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+        working-directory: performance/carga-k6-login
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v5
+
+      - name: Instalar k6
+        uses: grafana/setup-k6-action@v1
+        with:
+          k6-version: '2.3.0'
+
+      - name: Ejecutar la prueba de carga
+        env:
+          TARGET_TPS: ${{ inputs.target_tps || '30' }}
+          STEADY_DURATION: ${{ inputs.steady_duration || '2m' }}
+        run: |
+          k6 version
+          ./run-load-test.sh
+
+      - name: Publicar el resumen en la ejecucion
+        if: always()
+        run: |
+          {
+            echo '## Prueba de carga - login FakeStoreAPI'
+            echo '```text'
+            cat reports/summary.txt 2>/dev/null || echo 'No se genero el resumen'
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar los reportes
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: reporte-k6-login
+          path: performance/carga-k6-login/reports/
+          retention-days: 30
