@@ -1,0 +1,10 @@
+{
+  "id": "#(datos.id)",
+  "username": "#(datos.username)",
+  "firstName": "Laura",
+  "lastName": "Gomez",
+  "email": "#(datos.email)",
+  "password": "Qa.Reto2026*",
+  "phone": "0991234567",
+  "userStatus": 1
+}

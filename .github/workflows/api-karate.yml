@@ -1,0 +1,41 @@
+name: API - Karate PetStore
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'automatizacion/api-karate-petstore/**'
+      - '.github/workflows/api-karate.yml'
+  workflow_dispatch:
+
+jobs:
+  api-usuarios:
+    name: Pruebas del recurso /user
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: automatizacion/api-karate-petstore
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v5
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: automatizacion/api-karate-petstore/pom.xml
+
+      - name: Ejecutar las pruebas Karate
+        run: mvn -B -ntp clean test
+
+      - name: Guardar el reporte de Karate
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: reporte-karate-petstore
+          path: automatizacion/api-karate-petstore/target/karate-reports/
+          retention-days: 30
