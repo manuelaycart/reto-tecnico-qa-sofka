@@ -1,0 +1,52 @@
+
+
+  █ THRESHOLDS 
+
+    http_req_duration{transaccion:login}
+    ✓ 'p(95)<1500' p(95)=513.67ms
+
+    http_req_failed{transaccion:login}
+    ✓ 'rate<0.03' rate=0.00%
+    ✓ 'rate<0.20' rate=0.00%
+
+    http_reqs{transaccion:login}
+    ✓ 'rate>=20' rate=27.016592/s
+
+    login_errors
+    ✓ 'rate<0.03' rate=0.00%
+
+
+  █ TOTAL RESULTS 
+
+    checks_total.......: 12177   81.049777/s
+    checks_succeeded...: 100.00% 12177 out of 12177
+    checks_failed......: 0.00%   0 out of 12177
+
+    ✓ status 201 (login exitoso)
+    ✓ respuesta contiene un token JWT
+    ✓ tiempo de respuesta <= 1,5 s
+
+    CUSTOM
+    login_errors...................: 0.00%  0 out of 4059
+
+    HTTP
+    http_req_duration..............: avg=335.56ms min=248.57ms med=292.6ms  p(90)=483.19ms p(95)=513.78ms p(99)=649.44ms max=944.01ms
+      { expected_response:true }...: avg=335.56ms min=248.57ms med=292.6ms  p(90)=483.19ms p(95)=513.78ms p(99)=649.44ms max=944.01ms
+      { transaccion:login }........: avg=335.5ms  min=248.57ms med=292.6ms  p(90)=483.06ms p(95)=513.67ms p(99)=649.46ms max=944.01ms
+    http_req_failed................: 0.00%  0 out of 4060
+      { transaccion:login }........: 0.00%  0 out of 4059
+    http_reqs......................: 4060   27.023248/s
+      { transaccion:login }........: 4059   27.016592/s
+
+    EXECUTION
+    iteration_duration.............: avg=335.79ms min=248.76ms med=292.89ms p(90)=483.27ms p(95)=513.95ms p(99)=649.79ms max=944.26ms
+    iterations.....................: 4059   27.016592/s
+    vus............................: 1      min=0         max=13
+    vus_max........................: 20     min=20        max=20
+
+    NETWORK
+    data_received..................: 2.4 MB 16 kB/s
+    data_sent......................: 496 kB 3.3 kB/s
+
+
+

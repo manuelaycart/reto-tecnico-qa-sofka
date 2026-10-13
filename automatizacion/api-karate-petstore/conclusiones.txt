@@ -1,0 +1,88 @@
+===============================================================================
+ CONCLUSIONES - PRUEBA TÉCNICA / EJERCICIO 2
+ Pruebas de servicios REST con Karate: usuarios de PetStore
+ Autor: Manuel Aycart
+===============================================================================
+
+1. RESULTADO DE LA EJECUCIÓN
+----------------------------
+  Escenarios : 7 ejecutados, 7 aprobados, 0 fallidos
+  Duración   : 10,6 s (25 llamadas HTTP)
+  Ambiente   : GitHub Actions (ubuntu-latest), Java 21, Karate 1.5.2
+  Tiempos    : respuesta mínima 202 ms, mediana 209 ms, máxima 612 ms (la
+               máxima corresponde a la primera llamada, que incluye el handshake TLS)
+
+  Los cinco casos del enunciado pasaron tanto como escenarios independientes
+  como en el flujo E2E encadenado. El caso negativo (usuario inexistente)
+  también pasó.
+
+
+2. HALLAZGOS SOBRE LA API
+------------------------
+  H1. La API expone la contraseña en texto plano (severidad alta en una API real)
+      GET /v2/user/{username} devuelve el campo "password" tal como se envió.
+      La prueba lo confirma porque la respuesta es idéntica al usuario creado.
+      Una API real nunca debería devolver credenciales.
+
+  H2. Operaciones sin autenticación (severidad alta en una API real)
+      Crear, modificar y eliminar usuarios no requiere token ni api_key:
+      cualquiera puede borrar o modificar cualquier usuario si conoce su username.
+
+  H3. Código de estado poco preciso al crear
+      POST /v2/user responde 200 en lugar de 201 Created, y todas las respuestas
+      de escritura traen "type": "unknown", un valor genérico que no aporta
+      información al consumidor.
+
+  H4. Respuestas inconsistentes entre operaciones
+      Crear y actualizar devuelven el id en "message", mientras que eliminar
+      devuelve el username. Un consumidor no puede tratar "message" de forma
+      uniforme.
+
+  H5. Divulgación de versión del servidor
+      Las respuestas incluyen la cabecera "Server: Jetty(9.2.9.v20150224)", una
+      versión de 2015 sin soporte. Exponer la versión facilita buscar
+      vulnerabilidades conocidas.
+
+  H6. Ambiente compartido
+      PetStore es público y compartido. Para evitar choques con datos de otros
+      usuarios, cada ejecución genera id, username y email únicos, y cada
+      escenario elimina el usuario que creó (afterScenario). Las lecturas usan
+      "retry until" por si la API tarda en reflejar una escritura; en las
+      ejecuciones realizadas no fue necesario reintentar.
+
+
+3. DECISIONES DE DISEÑO
+-----------------------
+  - Escenarios independientes: cualquier caso se puede ejecutar solo por su tag
+    y en cualquier orden, porque prepara sus propias precondiciones.
+  - Flujo E2E encadenado aparte, para mostrar cómo la salida de un caso alimenta
+    al siguiente (idCreado, usuarioCreado, usuarioActualizado).
+  - Pasos reutilizables en helpers/ (marcados con @ignore) para no repetir
+    código entre escenarios.
+  - Validación de esquema con fuzzy matching (#number, #string, #regex) más
+    validación de valores exactos.
+  - Request en un archivo JSON con expresiones embebidas y datos únicos
+    generados por un script JS.
+  - karate-config.js centraliza URL base, timeouts y reintentos; la URL se puede
+    sobrescribir desde la línea de comandos.
+  - Limpieza automática de datos de prueba con afterScenario.
+
+
+4. CONCLUSIONES
+---------------
+  - El ciclo de vida del recurso /user (crear, consultar, actualizar y eliminar)
+    funciona según lo esperado y los cambios se reflejan de inmediato en las
+    consultas.
+  - Funcionalmente la API cumple, pero presenta problemas de seguridad (H1, H2,
+    H5) y de diseño de contrato (H3, H4) que serían bloqueantes en un servicio
+    productivo.
+
+
+5. RECOMENDACIONES
+------------------
+  - No devolver la contraseña en ninguna respuesta y exigir autenticación para
+    las operaciones de escritura.
+  - Responder 201 Created al crear y usar un contrato de respuesta consistente.
+  - Ocultar la versión del servidor y actualizar Jetty.
+  - Ampliar la cobertura: validaciones de campos (email inválido, username
+    duplicado), creación masiva (/user/createWithList) y login/logout.

@@ -1,0 +1,98 @@
+===============================================================================
+ CONCLUSIONES - PRUEBA TÉCNICA / EJERCICIO 1
+ Prueba E2E: compra como invitado en OpenCart (Serenity BDD + Screenplay)
+ Autor: Manuel Aycart
+===============================================================================
+
+1. RESULTADO DE LA EJECUCIÓN
+----------------------------
+  Escenario : Compra exitosa de dos productos mediante Guest Checkout
+  Resultado : APROBADO (1 de 1) - duración del escenario: 22,6 s
+  Ambiente  : GitHub Actions (ubuntu-latest), Java 21, Chrome 154 headless
+
+  - Se agregaron "iPod Classic" y "HTC Touch HD" desde los resultados de búsqueda,
+    validando el mensaje de éxito de cada uno.
+  - El carrito mostró exactamente los dos productos (total $244.00) y sin alertas
+    de stock.
+  - Se completó el checkout como invitado: opciones de checkout, datos de
+    facturación (Ecuador / Guayas), método de envío, aceptación de términos,
+    método de pago y confirmación.
+  - Se llegó a la página de éxito con el título "Your order has been placed!".
+
+
+2. HALLAZGOS
+------------
+  H1. Defecto en la página del carrito (severidad baja, cosmético)
+      El título de la página del carrito muestra "Use Gift Certificate (1.15kg)"
+      en lugar de "Shopping Cart". La miga de pan sí dice "Shopping Cart".
+      Evidencia: evidencias/capturas/04-carrito-de-compras.png
+      Impacto: confunde al usuario sobre la página en la que está.
+      Decisión: la automatización identifica la página por la URL
+      (route=checkout/cart) y por la tabla de productos, no por el título, para que
+      este defecto no oculte el resto del flujo.
+
+  H2. Productos destacados sin stock
+      MacBook, MacBook Air y MacBook Pro aparecen como "Out Of Stock" (revisado el
+      13/10/2026), mientras que los productos con existencias muestran la cantidad
+      disponible (iPod Classic: 528, HTC Touch HD: 837). OpenCart marca con *** los
+      productos sin stock en el carrito, muestra la alerta "Products marked with
+      *** are not available..." y, si la tienda no permite vender sin stock, no
+      deja continuar al checkout.
+      Decisión: se eligieron productos con stock y el escenario valida que no
+      aparezca la alerta antes de pagar. Así, si el ambiente se queda sin
+      unidades, el reporte dice exactamente por qué falla la prueba.
+
+  H3. Chrome 154 y el sitio con enlaces http/https mezclados
+      Desde Chrome 154 (octubre de 2026) la opción "Always use secure connections"
+      viene activa por defecto. El sitio usa http para el carrito y https para el
+      checkout. En serenity.conf se fijó el comportamiento con
+      --disable-features=HttpsUpgrades,HttpsFirstBalancedModeAutoEnable para que la
+      navegación sea la misma en cualquier versión de Chrome.
+
+  H4. Ambiente compartido
+      Es una demo pública: el stock baja con cada compra (incluidas las de esta
+      prueba) y otros usuarios pueden alterar los datos. Cada ejecución crea un
+      pedido real en la demo.
+
+  H5. Método de pago por defecto
+      El ambiente preselecciona "Bank Transfer". La prueba usa el valor por
+      defecto porque el enunciado no pide un método específico.
+
+
+3. DECISIONES DE DISEÑO
+-----------------------
+  - Screenplay: el actor (Laura) ejecuta tareas de negocio. El checkout se divide
+    en una tarea por cada paso del acordeón de OpenCart, así el reporte muestra el
+    paso exacto donde falla.
+  - Esperas explícitas (WaitUntil y espera por URL); no se usan Thread.sleep.
+  - Localizadores estables (id y atributos). El botón "Add to Cart" se ubica por el
+    nombre exacto del producto, porque una búsqueda puede traer varios resultados
+    (ej. "MacBook" trae también Air y Pro).
+  - Datos de prueba en el feature (tabla clave/valor) transformados en un modelo
+    (Customer); la memoria del actor guarda los productos agregados para
+    compararlos con el carrito.
+  - URL base en serenity.conf por ambiente (http por defecto, https opcional).
+  - Las pruebas corren con Failsafe y el reporte se genera en post-integration-test:
+    el reporte existe aunque la prueba falle.
+  - El workflow de GitHub Actions ejecuta la prueba en cada cambio y guarda el
+    reporte como artefacto.
+
+
+4. CONCLUSIONES
+---------------
+  - El flujo de compra como invitado funciona de punta a punta en el ambiente de
+    pruebas con productos que tienen stock.
+  - Se encontró un defecto visual en el carrito (H1) que no bloquea la compra.
+  - La principal fuente de inestabilidad no es el código de la prueba sino el
+    ambiente compartido (stock y datos). La validación de stock previa al pago
+    convierte esa causa en un mensaje claro en lugar de una falla genérica.
+
+
+5. RECOMENDACIONES
+------------------
+  - Contar con datos de prueba controlados (productos con stock garantizado o
+    reinicio de la base de la demo antes de cada ejecución).
+  - Agregar escenarios negativos: campos obligatorios vacíos, correo inválido y
+    producto sin stock bloqueando el checkout.
+  - Parametrizar el método de pago si se necesitan probar varios.
+  - Ejecutar en más navegadores (Firefox, Edge) mediante un grid.

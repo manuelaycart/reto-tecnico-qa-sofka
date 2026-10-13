@@ -1,0 +1,52 @@
+<testsuite failures="0" name="petstore/usuarios/ciclo-vida-usuario.feature" skipped="0" tests="1" time="2.145616"><testcase classname="petstore.usuarios.ciclo-vida-usuario" name="Ciclo de vida completo de un usuario" time="2.145616"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+Given path 'user' ......................................................... passed
+And request usuario ....................................................... passed
+When method post .......................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaRespuesta .................................... passed
+And match response.message == datos.id + '' ............................... passed
+* def idCreado = response.message ......................................... passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 ..................................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaUsuario ...................................... passed
+And match response == usuario ............................................. passed
+* def usuarioCreado = response ............................................ passed
+* copy usuarioActualizado = usuarioCreado ................................. passed
+* set usuarioActualizado.firstName = 'Laura Sofia' ........................ passed
+* set usuarioActualizado.email = 'laura.sofia.' + idCreado + '@example.com' . passed
+Given path 'user', nombreUsuario .......................................... passed
+And request usuarioActualizado ............................................ passed
+When method put ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaRespuesta .................................... passed
+And match response.message == idCreado .................................... passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 &amp;&amp; response.email == usuarioActualizado.email . passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaUsuario ...................................... passed
+And match response == usuarioActualizado .................................. passed
+And match response.firstName != usuarioCreado.firstName ................... passed
+And match response.email != usuarioCreado.email ........................... passed
+And match response.lastName == usuarioCreado.lastName ..................... passed
+* print 'Antes:', usuarioCreado.firstName, '/', usuarioCreado.email, '| Después:', response.firstName, '/', response.email . passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 ..................................... passed
+When method delete ........................................................ passed
+Then status 200 ........................................................... passed
+And match response.message == nombreUsuario ............................... passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 404 ..................................... passed
+When method get ........................................................... passed
+Then status 404 ........................................................... passed
+And match response.message == 'User not found' ............................ passed
+</system-out></testcase>
+</testsuite>

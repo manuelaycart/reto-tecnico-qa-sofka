@@ -1,0 +1,118 @@
+<testsuite failures="0" name="petstore/usuarios/gestion-usuarios.feature" skipped="0" tests="6" time="2.671845"><testcase classname="petstore.usuarios.gestion-usuarios" name="Crear un usuario" time="0.235879"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+Given path 'user' ......................................................... passed
+And request usuario ....................................................... passed
+When method post .......................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaRespuesta .................................... passed
+And match response.code == 200 ............................................ passed
+And match response.message == datos.id + '' ............................... passed
+* print 'Usuario creado -&gt; id:', response.message, '| username:', nombreUsuario . passed
+</system-out></testcase>
+<testcase classname="petstore.usuarios.gestion-usuarios" name="Buscar el usuario creado" time="0.487323"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+* call read('classpath:petstore/usuarios/helpers/crear-usuario.feature') { cuerpo: '#(usuario)' } . passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 ..................................... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaUsuario ...................................... passed
+And match response == usuario ............................................. passed
+* print 'Usuario encontrado:', response ................................... passed
+</system-out></testcase>
+<testcase classname="petstore.usuarios.gestion-usuarios" name="Actualizar el nombre y el correo del usuario" time="0.434077"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+* call read('classpath:petstore/usuarios/helpers/crear-usuario.feature') { cuerpo: '#(usuario)' } . passed
+* copy usuarioActualizado = usuario ....................................... passed
+* set usuarioActualizado.firstName = nuevoNombre .......................... passed
+* set usuarioActualizado.email = nuevoCorreo .............................. passed
+Given path 'user', nombreUsuario .......................................... passed
+And request usuarioActualizado ............................................ passed
+When method put ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaRespuesta .................................... passed
+And match response.code == 200 ............................................ passed
+And match response.message == datos.id + '' ............................... passed
+</system-out></testcase>
+<testcase classname="petstore.usuarios.gestion-usuarios" name="Buscar el usuario actualizado" time="0.647646"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+* call read('classpath:petstore/usuarios/helpers/crear-usuario.feature') { cuerpo: '#(usuario)' } . passed
+* copy usuarioActualizado = usuario ....................................... passed
+* set usuarioActualizado.firstName = nuevoNombre .......................... passed
+* set usuarioActualizado.email = nuevoCorreo .............................. passed
+* call read('classpath:petstore/usuarios/helpers/actualizar-usuario.feature') { nombreUsuario: '#(nombreUsuario)', cuerpo: '#(usuarioActualizado)' } . passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 &amp;&amp; response.email == nuevoCorreo .... passed
+When method get ........................................................... passed
+Then status 200 ........................................................... passed
+And match response == esquemaUsuario ...................................... passed
+And match response.firstName == nuevoNombre ............................... passed
+And match response.email == nuevoCorreo ................................... passed
+And match response == usuarioActualizado .................................. passed
+* print 'Antes:', usuario.firstName, '/', usuario.email, '| Después:', response.firstName, '/', response.email . passed
+</system-out></testcase>
+<testcase classname="petstore.usuarios.gestion-usuarios" name="Eliminar el usuario" time="0.652736"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+* call read('classpath:petstore/usuarios/helpers/crear-usuario.feature') { cuerpo: '#(usuario)' } . passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 200 ..................................... passed
+When method delete ........................................................ passed
+Then status 200 ........................................................... passed
+And match response == { code: 200, type: 'unknown', message: '#(nombreUsuario)' } . passed
+Given path 'user', nombreUsuario .......................................... passed
+And retry until responseStatus == 404 ..................................... passed
+When method get ........................................................... passed
+Then status 404 ........................................................... passed
+And match response == { code: 1, type: 'error', message: 'User not found' } . passed
+</system-out></testcase>
+<testcase classname="petstore.usuarios.gestion-usuarios" name="Consultar un usuario inexistente retorna 404" time="0.214183"><system-out>* url baseUrl ............................................................. passed
+* def datos = call read('classpath:petstore/usuarios/data/generar-usuario.js') . passed
+* def nombreUsuario = datos.username ...................................... passed
+* def usuario = read('classpath:petstore/usuarios/data/usuario-request.json') . passed
+* def esquemaUsuario = read('classpath:petstore/usuarios/schemas/usuario-schema.json') . passed
+* def esquemaRespuesta = read('classpath:petstore/usuarios/schemas/respuesta-api-schema.json') . passed
+* def nuevoNombre = 'Laura Sofia' ......................................... passed
+* def nuevoCorreo = 'laura.sofia.' + datos.id + '@example.com' ............ passed
+* configure afterScenario = function(){ karate.call('classpath:petstore/usuarios/helpers/eliminar-usuario.feature', { nombreUsuario: nombreUsuario }) } . passed
+* def usuarioInexistente = 'no_existe_' + nombreUsuario ................... passed
+Given path 'user', usuarioInexistente ..................................... passed
+When method get ........................................................... passed
+Then status 404 ........................................................... passed
+And match response == { code: 1, type: 'error', message: 'User not found' } . passed
+</system-out></testcase>
+</testsuite>

@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Karate Timeline</title>
+    <style>
+      body, html { font-family: arial, sans-serif; font-size: 11pt; }
+      #visualization { box-sizing: border-box; width: 100%; height: 300px; }
+      .vis-item.failed { background-color: #F2928C; }
+      .page-heading { padding: 0.5em; margin-bottom: 0.5em; background-color: lightcyan; border: 1px solid gray; }
+    </style>
+    <script src="res/vis.min.js"></script>
+    <link href="res/vis.min.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div class="page-heading">
+      <a href="karate-summary.html">Summary</a>
+    </div>     
+    <div id="visualization"></div>
+    <script>
+var groups = [{"content":"main","id":1}];
+var items = [{"id":1,"group":1,"content":"petstore/usuarios/ciclo-vida-usuario[1:17]","start":1791934142763,"end":1791934145038,"title":"petstore/usuarios/ciclo-vida-usuario[1:17] 23:29:02.763-23:29:05.038 Ciclo de vida completo de un usuario"},{"id":2,"group":1,"content":"petstore/usuarios/gestion-usuarios[1:24]","start":1791934146722,"end":1791934146968,"title":"petstore/usuarios/gestion-usuarios[1:24] 23:29:06.722-23:29:06.968 Crear un usuario"},{"id":3,"group":1,"content":"petstore/usuarios/gestion-usuarios[2:35]","start":1791934147204,"end":1791934147694,"title":"petstore/usuarios/gestion-usuarios[2:35] 23:29:07.204-23:29:07.694 Buscar el usuario creado"},{"id":4,"group":1,"content":"petstore/usuarios/gestion-usuarios[3:46]","start":1791934147932,"end":1791934148368,"title":"petstore/usuarios/gestion-usuarios[3:46] 23:29:07.932-23:29:08.368 Actualizar el nombre y el correo del usuario"},{"id":5,"group":1,"content":"petstore/usuarios/gestion-usuarios[4:60]","start":1791934148595,"end":1791934149245,"title":"petstore/usuarios/gestion-usuarios[4:60] 23:29:08.595-23:29:09.245 Buscar el usuario actualizado"},{"id":6,"group":1,"content":"petstore/usuarios/gestion-usuarios[5:77]","start":1791934149469,"end":1791934150123,"title":"petstore/usuarios/gestion-usuarios[5:77] 23:29:09.469-23:29:10.123 Eliminar el usuario"},{"id":7,"group":1,"content":"petstore/usuarios/gestion-usuarios[6:93]","start":1791934150346,"end":1791934150562,"title":"petstore/usuarios/gestion-usuarios[6:93] 23:29:10.346-23:29:10.562 Consultar un usuario inexistente retorna 404"}];
+</script>
+    <script>
+      var container = document.getElementById('visualization');
+      var timeline = new vis.Timeline(container);
+      timeline.setOptions({groupOrder: 'content'});
+      timeline.setGroups(new vis.DataSet(groups));
+      timeline.setItems(new vis.DataSet(items));
+    </script>
+  </body>
+</html>

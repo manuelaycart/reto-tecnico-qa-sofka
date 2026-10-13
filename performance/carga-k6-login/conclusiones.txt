@@ -1,0 +1,91 @@
+===============================================================================
+ CONCLUSIONES - EJERCICIO DE PERFORMANCE / EJERCICIO 1
+ Prueba de carga del servicio de login (FakeStoreAPI) con k6
+ Autor: Manuel Aycart
+===============================================================================
+
+1. RESULTADO GENERAL
+--------------------
+  APROBADA: se cumplieron todos los criterios del enunciado.
+
+  Ejecución: GitHub Actions (ubuntu-latest), k6 2.3.0, 13/10/2026.
+  Perfil   : 20 s de subida, 2 min sostenidos a 30 TPS y 10 s de bajada (150 s).
+  Evidencia: evidencias/summary.txt, evidencias/summary.json y
+             evidencias/dashboard.html
+
+
+2. CUMPLIMIENTO DE CRITERIOS
+----------------------------
+  Criterio                              Objetivo     Resultado      Estado
+  ------------------------------------  -----------  -------------  --------
+  Throughput promedio de la prueba      >= 20 TPS    27,02 TPS      CUMPLE
+  Tiempo de respuesta (p95)             < 1,5 s      513,67 ms      CUMPLE
+  Tiempo de respuesta máximo            <= 1,5 s     944,01 ms      CUMPLE
+  Tasa de error HTTP                    < 3 %        0,00 %         CUMPLE
+  Transacciones fallidas (login_errors) < 3 %        0,00 %         CUMPLE
+
+  Los 27,02 TPS son el promedio de toda la prueba, rampas incluidas. Durante la
+  fase sostenida k6 mantuvo los 30 TPS configurados y no descartó iteraciones
+  (la métrica dropped_iterations no aparece en el resumen).
+
+
+3. MÉTRICAS PRINCIPALES
+-----------------------
+  Logins ejecutados ........ 4.059 (más 1 del smoke test)
+  Checks ................... 12.177 de 12.177 exitosos (100 %)
+  Tiempo de respuesta ...... promedio 335,5 ms | mínimo 248,6 ms | mediana 292,6 ms
+                             p90 483,1 ms | p95 513,7 ms | p99 649,5 ms | máximo 944,0 ms
+  Usuarios virtuales ....... máximo 13 en uso simultáneo (20 preasignados)
+  Datos .................... 2,4 MB recibidos | 496 kB enviados
+  Distribución de datos .... unos 812 logins por cada una de las 5 credenciales
+
+
+4. HALLAZGOS
+------------
+  H1. El servicio respondió de forma estable a 30 TPS: sin errores, con el 99 %
+      de los logins por debajo de 650 ms y el más lento en 944 ms, todavía con
+      margen frente al límite de 1,5 s.
+
+  H2. Un login válido responde 201 Created (no 200) con un token JWT. El check
+      valida exactamente ese código, de modo que un cambio de contrato se
+      detectaría como error.
+
+  H3. La concurrencia medida es coherente con la Ley de Little:
+      30 TPS x 0,335 s de respuesta media = unas 10 peticiones simultáneas. k6
+      necesitó como máximo 13 VUs, por lo que los 20 preasignados alcanzaron.
+      La cantidad de logins también cuadra con el perfil configurado:
+      310 (subida) + 3.600 (2 min a 30 TPS) + 150 (bajada) = 4.060 esperados
+      frente a 4.059 ejecutados.
+
+  H4. La mediana (292,6 ms) está por debajo del promedio (335,5 ms): hay una
+      cola de respuestas más lentas, pero acotada (p99 a 2,2 veces la mediana).
+
+  H5. El primer login del smoke test tardó unos 800 ms porque incluye el
+      establecimiento de la conexión TLS. Las siguientes reutilizan la conexión.
+
+
+5. CONSIDERACIONES Y LIMITACIONES
+---------------------------------
+  - FakeStoreAPI es un servicio público compartido. Los tiempos incluyen la red
+    entre el runner de GitHub (Estados Unidos) y el servicio, y pueden variar
+    según la hora y la ubicación desde donde se ejecute.
+  - La prueba es de carga a un nivel definido (30 TPS por 2 minutos). No es una
+    prueba de estrés ni de resistencia: no busca el punto de quiebre del servicio,
+    y se evitó exigirlo más porque es una API pública de terceros.
+  - El criterio de tiempo se controla de dos formas: el p95 como indicador de la
+    experiencia general y cada petición mayor a 1,5 s cuenta como transacción
+    fallida dentro del límite de error del 3 %.
+
+
+6. RECOMENDACIONES
+------------------
+  - Repetir la prueba en un ambiente controlado con monitoreo del servidor (CPU,
+    memoria, base de datos) para relacionar la latencia con el consumo de
+    recursos.
+  - Ejecutar una prueba de estrés escalonada (por ejemplo 30, 60, 90 y 120 TPS)
+    para encontrar la capacidad máxima, y una de resistencia (1 hora o más) para
+    detectar degradación en el tiempo.
+  - Incluir credenciales inválidas en una proporción controlada para medir el
+    comportamiento del 401 bajo carga.
+  - Ejecutar desde una región cercana a los usuarios reales para separar la
+    latencia de red del tiempo de procesamiento del servicio.
