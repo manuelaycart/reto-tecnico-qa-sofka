@@ -1,0 +1,44 @@
+name: E2E - Serenity BDD OpenCart
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'automatizacion/e2e-serenity-opencart/**'
+      - '.github/workflows/e2e-serenity.yml'
+  workflow_dispatch:
+
+jobs:
+  e2e-compra-invitado:
+    name: Compra como invitado
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: automatizacion/e2e-serenity-opencart
+
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v5
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: automatizacion/e2e-serenity-opencart/pom.xml
+
+      - name: Version de Google Chrome
+        run: google-chrome --version
+
+      - name: Ejecutar las pruebas E2E
+        run: mvn -B -ntp clean verify
+
+      - name: Guardar el reporte de Serenity
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: reporte-serenity-opencart
+          path: automatizacion/e2e-serenity-opencart/target/site/serenity/
+          retention-days: 30
